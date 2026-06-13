@@ -7,6 +7,14 @@ spring:
   docker:
     compose:
       enabled: false
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 25
 
 management:
   endpoints:
