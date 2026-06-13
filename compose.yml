@@ -1,0 +1,53 @@
+name: geoanalytics-stack
+services:
+  backend:
+    container_name: geoanalytics-backend
+    image: geoanalytics-api:latest
+    build: ./back
+    mem_limit: 512m
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    env_file:
+      - ./back/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health/liveness"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - postgres_db
+
+  postgres_db:
+    container_name: geoanalytics-postgres
+    image: postgres:18-alpine
+    mem_limit: 256m
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: geoanalytics_db
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "geoanalytics_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  frontend:
+    container_name: geoanalytics-frontend
+    image: geoanalytics-frontend:latest
+    build: ./front
+    mem_limit: 256m
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
