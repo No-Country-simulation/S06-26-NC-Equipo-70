@@ -1,53 +1,67 @@
 name: geoanalytics-stack
+networks:
+  geo_net:
+    driver: bridge
 services:
   backend:
-    container_name: geoanalytics-backend
+    container_name: back-geoanalytics
     image: geoanalytics-api:latest
     build: ./back
     mem_limit: 512m
+    networks:
+      - geo_net
     ports:
       - "8080:8080"
-      - "9090:9090"
     env_file:
       - ./back/.env
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health/liveness"]
+      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:9090/actuator/health/liveness" ]
       interval: 15s
       timeout: 5s
       retries: 3
+      start_period: 30s
     depends_on:
-      - postgres_db
+      postgres_db:
+        condition: service_healthy
 
   postgres_db:
-    container_name: geoanalytics-postgres
+    container_name: postgres
     image: postgres:18-alpine
     mem_limit: 256m
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: geoanalytics_db
+    networks:
+      - geo_net
+    env_file:
+      - ./back/db.env
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "user", "-d", "geoanalytics_db"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "5432:5432"
+      start_period: 30s
     volumes:
       - postgres_data:/var/lib/postgresql
 
   frontend:
-    container_name: geoanalytics-frontend
+    container_name: front-geoanalytics
     image: geoanalytics-frontend:latest
     build: ./front
     mem_limit: 256m
+    networks:
+      - geo_net
     ports:
-      - "3000:3000"
+      - "80:8080"
     depends_on:
-      postgres_db:
-        condition: service_healthy
       backend:
         condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8080/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
 volumes:
   postgres_data:
