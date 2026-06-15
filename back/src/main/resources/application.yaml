@@ -36,3 +36,6 @@ management:
   endpoint:
     health:
       show-details: never
+
+monitor:
+  token: ${KEEP_ALIVE_TOKEN}
