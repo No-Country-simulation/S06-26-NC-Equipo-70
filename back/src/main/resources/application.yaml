@@ -39,7 +39,14 @@ management:
   endpoint:
     health:
       show-details: never
-
 appbit:
   cors:
     allowed-origins: ${ALLOWED_ORIGINS}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
