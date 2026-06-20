@@ -3,12 +3,16 @@ package com.appbit.geoanalytics.shared.infrastructure.advice;
 import com.appbit.geoanalytics.shared.infrastructure.rest.response.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -20,11 +24,14 @@ import java.util.UUID;
 /**
  * Global exception handler that intercepts application-wide exceptions
  * and maps them into a standardized {@link ApiResponse} structure.
+ *
  * @author NC-Equipo-70
+ * @since 2026
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     /**
      * Handles Jakarta validation constraints triggered by {@code @Valid} on request bodies.
      *
@@ -71,6 +78,90 @@ public class GlobalExceptionHandler {
                 .toList();
 
         ApiResponse<Void> response = ApiResponse.error("Validation constraints were violated.", errors, requestId);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Handles database data integrity violations, such as unique key or constraint failures.
+     *
+     * @param ex the data integrity violation exception
+     * @return a {@link ResponseEntity} indicating a data resource conflict
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String requestId = generateRequestId();
+        log.error("Data integrity violation failure [{}]: {}", requestId, ex.getMessage());
+
+        ApiResponse.ApiErrorDetail errorDetail = new ApiResponse.ApiErrorDetail(
+                "DATA_CONFLICT",
+                "database",
+                "The operation metadata conflicts with existing persistence constraints (e.g., duplicate unique keys)."
+        );
+
+        ApiResponse<Void> response = ApiResponse.error("A data integrity conflict occurred.", List.of(errorDetail), requestId);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    /**
+     * Handles cases where a required query parameter is missing from the request URL.
+     *
+     * @param ex the missing parameter exception
+     * @return a {@link ResponseEntity} indicating a bad request missing criteria
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
+        String requestId = generateRequestId();
+        log.warn("Missing required query parameter [{}]: parameter='{}'", requestId, ex.getParameterName());
+
+        ApiResponse.ApiErrorDetail errorDetail = new ApiResponse.ApiErrorDetail(
+                "MISSING_QUERY_PARAMETER",
+                ex.getParameterName(),
+                String.format("The required query parameter '%s' must be provided.", ex.getParameterName())
+        );
+
+        ApiResponse<Void> response = ApiResponse.error("Required query parameter is missing.", List.of(errorDetail), requestId);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Handles cases where a required request header is missing from the HTTP request metadata.
+     *
+     * @param ex the missing request header exception
+     * @return a {@link ResponseEntity} indicating a bad request missing metadata headers
+     */
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingRequestHeader(MissingRequestHeaderException ex) {
+        String requestId = generateRequestId();
+        log.warn("Missing required HTTP header [{}]: header='{}'", requestId, ex.getHeaderName());
+
+        ApiResponse.ApiErrorDetail errorDetail = new ApiResponse.ApiErrorDetail(
+                "MISSING_HTTP_HEADER",
+                ex.getHeaderName(),
+                String.format("The required HTTP header '%s' must be specified.", ex.getHeaderName())
+        );
+
+        ApiResponse<Void> response = ApiResponse.error("Required HTTP header is missing.", List.of(errorDetail), requestId);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Handles cases where a required path variable is missing from the incoming request path routing mapping.
+     *
+     * @param ex the missing path variable exception
+     * @return a {@link ResponseEntity} indicating a bad request mapping pattern matching failure
+     */
+    @ExceptionHandler(MissingPathVariableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingPathVariable(MissingPathVariableException ex) {
+        String requestId = generateRequestId();
+        log.warn("Missing required path variable [{}]: variable='{}'", requestId, ex.getVariableName());
+
+        ApiResponse.ApiErrorDetail errorDetail = new ApiResponse.ApiErrorDetail(
+                "MISSING_PATH_VARIABLE",
+                ex.getVariableName(),
+                String.format("The required path variable '%s' is missing from the request URI pattern.", ex.getVariableName())
+        );
+
+        ApiResponse<Void> response = ApiResponse.error("Required path variable is missing.", List.of(errorDetail), requestId);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
