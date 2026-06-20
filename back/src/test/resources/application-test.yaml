@@ -20,6 +20,3 @@ spring:
         enabled: false
   flyway:
     enabled: false
-  docker:
-    compose:
-      enabled: false

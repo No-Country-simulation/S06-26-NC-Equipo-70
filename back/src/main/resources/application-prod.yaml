@@ -4,9 +4,6 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
-  docker:
-    compose:
-      enabled: false
   jpa:
     properties:
       hibernate:
