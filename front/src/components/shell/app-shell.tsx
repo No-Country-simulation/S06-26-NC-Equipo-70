@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const nav = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Home", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: Activity },
   { href: "/map", label: "Territory map", icon: Map },
   { href: "/ai", label: "AI insights", icon: Sparkles },
 ];
