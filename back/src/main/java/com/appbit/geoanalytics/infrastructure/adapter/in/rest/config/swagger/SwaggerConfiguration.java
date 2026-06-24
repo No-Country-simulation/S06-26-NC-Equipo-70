@@ -1,4 +1,4 @@
-package com.appbit.geoanalytics.infrastructure.rest.web.config.swagger;
+package com.appbit.geoanalytics.infrastructure.adapter.in.rest.config.swagger;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Paths;
@@ -9,9 +9,11 @@ import io.swagger.v3.oas.models.servers.ServerVariables;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 
+@Profile("dev")
 @Configuration(proxyBeanMethods = false)
 public class SwaggerConfiguration {
 
