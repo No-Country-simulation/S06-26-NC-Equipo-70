@@ -29,6 +29,7 @@
     <properties>
         <java.version>25</java.version>
         <spring-ai.version>2.0.0</spring-ai.version>
+        <app.name>geoanalytics-api</app.name>
     </properties>
     <dependencies>
         <dependency>
@@ -112,6 +113,12 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>3.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>uuid-creator</artifactId>
+            <version>6.1.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -126,6 +133,8 @@
     </dependencyManagement>
 
     <build>
+        <!-- jar target app name -->
+        <finalName>${app.name}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -140,6 +149,17 @@
                     </excludes>
                 </configuration>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.graalvm.buildtools</groupId>-->
+<!--                <artifactId>native-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <imageName>geo-analytics-api</imageName>-->
+<!--                    <buildArgs>-->
+<!--                        <buildArg>&#45;&#45;parallelism=12</buildArg>-->
+<!--                        <buildArg>-J-Xmx16g</buildArg>-->
+<!--                    </buildArgs>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
