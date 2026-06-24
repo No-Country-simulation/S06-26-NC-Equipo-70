@@ -1,4 +1,4 @@
-package com.appbit.geoanalytics.infrastructure.rest.web.properties;
+package com.appbit.geoanalytics.infrastructure.adapter.in.rest.properties;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;

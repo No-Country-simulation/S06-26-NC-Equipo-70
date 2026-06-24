@@ -1,6 +1,6 @@
-package com.appbit.geoanalytics.infrastructure.rest.web.config.cors;
+package com.appbit.geoanalytics.infrastructure.adapter.in.rest.config.cors;
 
-import com.appbit.geoanalytics.infrastructure.rest.web.properties.CorsProperties;
+import com.appbit.geoanalytics.infrastructure.adapter.in.rest.properties.CorsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
