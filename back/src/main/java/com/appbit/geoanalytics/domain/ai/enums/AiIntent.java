@@ -1,0 +1,14 @@
+package com.appbit.geoanalytics.domain.ai.enums;
+
+public enum AiIntent {
+    TRAINING_GAP,
+    EMPLOYABILITY_GAP,
+    MENTAL_HEALTH_ACCESS,
+    MENTORSHIP_NEED,
+    SOCIAL_EXPERIENCE,
+    CONNECTIVITY_GAP,
+    POPULATION_CONCENTRATION,
+    REGION_COMPARISON,
+    SOURCE_EXPLANATION,
+    UNKNOWN
+}
