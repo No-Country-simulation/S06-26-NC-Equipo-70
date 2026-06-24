@@ -13,3 +13,13 @@ spring:
         order_inserts: true
         order_updates: true
         default_batch_fetch_size: 25
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
