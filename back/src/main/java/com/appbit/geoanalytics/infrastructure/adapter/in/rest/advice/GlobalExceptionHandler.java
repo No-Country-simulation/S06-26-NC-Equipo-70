@@ -2,6 +2,7 @@ package com.appbit.geoanalytics.infrastructure.adapter.in.rest.advice;
 
 import com.appbit.geoanalytics.domain.exception.DomainException;
 import com.appbit.geoanalytics.infrastructure.adapter.in.rest.code.ApiResponseCode;
+import com.appbit.geoanalytics.infrastructure.adapter.in.rest.correlation.RequestContext;
 import com.appbit.geoanalytics.infrastructure.adapter.in.rest.factory.ApiResponseFactory;
 import com.appbit.geoanalytics.infrastructure.adapter.in.rest.response.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
@@ -24,23 +25,22 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
  * Centralized REST exception handler for the public HTTP API.
  *
  * <p>This class belongs to the REST input adapter. It translates Spring MVC,
- * validation, domain, persistence and unexpected exceptions into the standardized
+ * validation, domain, persistence, and unexpected exceptions into the standardized
  * API response envelope used by the HTTP contract.</p>
  *
  * <p>It must not be used by domain or application services. Domain and application
- * layers should throw their own exceptions and remain independent from HTTP
+ * layers should throw their own exceptions and remain independent of HTTP
  * concerns such as {@link ResponseEntity}, {@link HttpStatus} or response
  * serialization details.</p>
  *
  * <p>Response body creation is delegated to {@link ApiResponseFactory} to keep
- * metadata generation, API versioning and response envelope construction in a
+ * metadata generation, API versioning, and response envelope construction in a
  * single REST infrastructure component.</p>
  */
 @Slf4j
@@ -49,6 +49,7 @@ import java.util.stream.Stream;
 public class GlobalExceptionHandler {
 
     private final ApiResponseFactory apiResponseFactory;
+    private final RequestContext requestContext;
 
     /**
      * Handles validation errors raised when a request body annotated with
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Request body validation failed [{}]: {}", requestId, ex.getMessage());
 
@@ -100,7 +101,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles Jakarta Validation errors raised on request parameters, path
-     * variables or headers.
+     * variables, or headers.
      *
      * <p>This usually applies when validation constraints are declared directly
      * on controller method parameters.</p>
@@ -112,7 +113,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleConstraintViolation(
             ConstraintViolationException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Request parameter validation failed [{}]: {}", requestId, ex.getMessage());
 
@@ -144,7 +145,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Missing request parameter [{}]: parameter='{}'", requestId, ex.getParameterName());
 
@@ -173,7 +174,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMissingRequestHeader(
             MissingRequestHeaderException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Missing request header [{}]: header='{}'", requestId, ex.getHeaderName());
 
@@ -205,7 +206,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMissingPathVariable(
             MissingPathVariableException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.error(
                 "Missing path variable in handler mapping [{}]: variable='{}'",
@@ -229,9 +230,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles unreadable, empty or malformed HTTP request bodies.
+     * Handles unreadable, empty, or malformed HTTP request bodies.
      *
-     * <p>This includes invalid JSON syntax, incompatible payload structures and
+     * <p>This includes invalid JSON syntax, incompatible payload structures, and
      * request bodies that cannot be deserialized into the expected DTO.</p>
      *
      * @param ex exception raised when the request body cannot be read or converted
@@ -241,7 +242,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Malformed request body [{}]: {}", requestId, ex.getMessage());
 
@@ -273,7 +274,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Request parameter type mismatch [{}]: {}", requestId, ex.getMessage());
 
@@ -306,9 +307,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(
             NoResourceFoundException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
-        log.warn("Resource not found [{}]: path='{}'", requestId, ex.getResourcePath().isBlank() ? "/" : ex.getResourcePath());
+        log.warn(
+                "Resource not found [{}]: path='{}'",
+                requestId,
+                ex.getResourcePath().isBlank() ? "/" : ex.getResourcePath()
+        );
 
         ApiResponse.ApiErrorDetail error = detail(
                 "path",
@@ -335,7 +340,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(
             HttpRequestMethodNotSupportedException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("HTTP method not allowed [{}]: method='{}'", requestId, ex.getMethod());
 
@@ -364,7 +369,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotSupported(
             HttpMediaTypeNotSupportedException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Unsupported media type [{}]: contentType='{}'", requestId, ex.getContentType());
 
@@ -395,7 +400,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ApiResponse<Void>> handleDomainException(DomainException ex) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.warn("Domain validation failed [{}]: {}", requestId, ex.getMessage());
 
@@ -430,7 +435,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(
             DataIntegrityViolationException ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.error("Data integrity conflict [{}]", requestId, ex);
 
@@ -463,7 +468,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAllUncaughtExceptions(
             Exception ex
     ) {
-        String requestId = generateRequestId();
+        String requestId = requestContext.requestId();
 
         log.error("Unexpected internal error [{}]", requestId, ex);
 
@@ -489,7 +494,7 @@ public class GlobalExceptionHandler {
      * error contract exposes rejected values as nullable text. Blank fields and
      * rejected values are normalized to {@code null}.</p>
      *
-     * @param field field, parameter, header or request component associated with the error
+     * @param field field, parameter, header, or request component associated with the error
      * @param reason human-readable reason explaining the error
      * @param rejectedValue rejected value received by the API, when available
      * @return structured API error detail
@@ -528,11 +533,12 @@ public class GlobalExceptionHandler {
      * @return stripped path value, using {@code /} when the path is missing or blank
      */
     private String normalizedPath(@Nullable String path) {
-        if (path == null || path.isBlank()) {
+        if (path == null || path.isBlank())
             return "/";
-        }
 
-        return path.strip();
+        String normalized = path.strip();
+
+        return normalized.startsWith("/") ? normalized : "/" + normalized;
     }
 
     /**
@@ -547,18 +553,5 @@ public class GlobalExceptionHandler {
         }
 
         return value.strip();
-    }
-
-    /**
-     * Generates a request identifier for response metadata and log correlation.
-     *
-     * <p>For a later production-grade improvement, this can be replaced by a
-     * request filter that reads or generates {@code X-Request-Id} and stores it
-     * in MDC for full request-level log correlation.</p>
-     *
-     * @return random UUID represented as text
-     */
-    private String generateRequestId() {
-        return UUID.randomUUID().toString();
     }
 }
