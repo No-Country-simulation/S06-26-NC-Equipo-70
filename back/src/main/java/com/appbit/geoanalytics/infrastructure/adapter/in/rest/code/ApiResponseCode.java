@@ -1,0 +1,31 @@
+package com.appbit.geoanalytics.infrastructure.adapter.in.rest.code;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public enum ApiResponseCode {
+
+    DATA_QUERY_PROCESSED("DATA_QUERY_PROCESSED"),
+    QUERY_PROCESSED_WITH_LIMITATIONS("QUERY_PROCESSED_WITH_LIMITATIONS"),
+    MAP_REGIONS_RETRIEVED("MAP_REGIONS_RETRIEVED"),
+
+    VALIDATION_ERROR("VALIDATION_ERROR"),
+    MALFORMED_REQUEST("MALFORMED_REQUEST"),
+    UNSUPPORTED_LANGUAGE("UNSUPPORTED_LANGUAGE"),
+    DATA_NOT_FOUND("DATA_NOT_FOUND"),
+    RESOURCE_NOT_FOUND("RESOURCE_NOT_FOUND"),
+    METHOD_NOT_ALLOWED("METHOD_NOT_ALLOWED"),
+    UNSUPPORTED_MEDIA_TYPE("UNSUPPORTED_MEDIA_TYPE"),
+    INSUFFICIENT_EVIDENCE("INSUFFICIENT_EVIDENCE"),
+    DATA_SOURCE_UNAVAILABLE("DATA_SOURCE_UNAVAILABLE"),
+    DATA_CONFLICT("DATA_CONFLICT"),
+    INTERNAL_ERROR("INTERNAL_ERROR");
+
+    private final String value;
+
+    @JsonValue
+    public String value() {
+        return value;
+    }
+}
