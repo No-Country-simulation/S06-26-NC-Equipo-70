@@ -20,3 +20,6 @@ spring:
         enabled: false
   flyway:
     enabled: false
+appbit:
+  cors:
+    allowed-origins: "https://mock-server.com"
