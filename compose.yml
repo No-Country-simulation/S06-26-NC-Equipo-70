@@ -13,6 +13,8 @@ services:
       - geo_net
     ports:
       - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
     env_file:
       - ./back/.env
     restart: unless-stopped
