@@ -7,6 +7,7 @@ services:
     container_name: back-geoanalytics
     image: geoanalytics-api:latest
     build: ./back
+    pull_policy: build
     mem_limit: 512m
     networks:
       - geo_net
@@ -47,6 +48,7 @@ services:
     container_name: front-geoanalytics
     image: geoanalytics-frontend:latest
     build: ./front
+    pull_policy: build
     mem_limit: 256m
     networks:
       - geo_net
