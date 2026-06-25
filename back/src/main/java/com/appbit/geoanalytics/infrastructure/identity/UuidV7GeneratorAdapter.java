@@ -1,16 +1,19 @@
 package com.appbit.geoanalytics.infrastructure.identity;
 
 import com.appbit.geoanalytics.application.shared.port.out.IdGeneratorPort;
-import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.stereotype.Component;
 
+import java.security.SecureRandom;
 import java.util.UUID;
 
 @Component
-public class UuidV7GeneratorAdapter  implements IdGeneratorPort{
+public class UuidV7GeneratorAdapter implements IdGeneratorPort {
+
+    private final UuidV7Generator uuidV7Generator = new UuidV7Generator(new SecureRandom());
 
     @Override
     public UUID generate() {
-        return UuidCreator.getTimeOrderedEpoch();
+        return uuidV7Generator.generate();
     }
 }
+
