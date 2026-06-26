@@ -28,7 +28,8 @@
     </scm>
     <properties>
         <java.version>25</java.version>
-        <spring-ai.version>2.0.0-RC2</spring-ai.version>
+        <spring-ai.version>2.0.0</spring-ai.version>
+        <app.name>geoanalytics-api</app.name>
     </properties>
     <dependencies>
         <dependency>
@@ -51,11 +52,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-docker-compose</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -112,6 +108,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.0.3</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -126,13 +127,14 @@
     </dependencyManagement>
 
     <build>
+        <!-- jar target app name -->
+        <finalName>${app.name}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <excludeDevtools>true</excludeDevtools>
-                    <excludeDockerCompose>true</excludeDockerCompose>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -141,6 +143,17 @@
                     </excludes>
                 </configuration>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.graalvm.buildtools</groupId>-->
+<!--                <artifactId>native-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <imageName>geo-analytics-api</imageName>-->
+<!--                    <buildArgs>-->
+<!--                        <buildArg>&#45;&#45;parallelism=12</buildArg>-->
+<!--                        <buildArg>-J-Xmx16g</buildArg>-->
+<!--                    </buildArgs>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -193,3 +206,4 @@
     </build>
 
 </project>
+
