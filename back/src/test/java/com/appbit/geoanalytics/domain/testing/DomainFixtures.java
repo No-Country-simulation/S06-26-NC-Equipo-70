@@ -53,9 +53,8 @@ import com.appbit.geoanalytics.domain.source.enums.DataSourceType;
 import com.appbit.geoanalytics.domain.source.model.DataSource;
 import com.appbit.geoanalytics.domain.source.vo.DataSourceId;
 import com.appbit.geoanalytics.domain.source.vo.SourceFileName;
-import com.github.f4b6a3.uuid.UuidCreator;
-
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -63,11 +62,31 @@ import java.util.UUID;
 
 public final class DomainFixtures {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final int TIMESTAMP_BITS = 48;
+    private static final int VERSION_BITS = 4;
+    private static final int RANDOM_A_BITS = 12;
+    private static final int RANDOM_B_BITS = 62;
+    private static final int UUID_VERSION = 7;
+    private static final int RFC_4122_VARIANT = 0b10;
+    private static final long TIMESTAMP_MASK = (1L << TIMESTAMP_BITS) - 1;
+    private static final long RANDOM_A_BOUND = 1L << RANDOM_A_BITS;
+    private static final long RANDOM_B_BOUND = 1L << RANDOM_B_BITS;
+    private static final long VERSION_VALUE = (long) UUID_VERSION << RANDOM_A_BITS;
+    private static final long VARIANT_VALUE = (long) RFC_4122_VARIANT << RANDOM_B_BITS;
+
     private DomainFixtures() {
     }
 
     public static UUID uuidV7() {
-        return UuidCreator.getTimeOrderedEpoch();
+        long timestamp = System.currentTimeMillis() & TIMESTAMP_MASK;
+        long randomA = SECURE_RANDOM.nextLong(RANDOM_A_BOUND);
+        long randomB = SECURE_RANDOM.nextLong(RANDOM_B_BOUND);
+
+        long mostSignificantBits = (timestamp << (VERSION_BITS + RANDOM_A_BITS)) | VERSION_VALUE | randomA;
+        long leastSignificantBits = VARIANT_VALUE | randomB;
+
+        return new UUID(mostSignificantBits, leastSignificantBits);
     }
 
     public static UUID nilUuid() {
@@ -412,3 +431,4 @@ public final class DomainFixtures {
         );
     }
 }
+
