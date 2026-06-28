@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { RegionDrawerProvider } from "@/components/region/region-drawer-provider";
 import { AppShell } from "@/components/shell/app-shell";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -51,16 +52,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <RegionDrawerProvider>
-            <AppShell>{children}</AppShell>
-          </RegionDrawerProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <RegionDrawerProvider>
+              <AppShell>{children}</AppShell>
+            </RegionDrawerProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
